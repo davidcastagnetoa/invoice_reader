@@ -1,11 +1,25 @@
 import AWS from "aws-sdk";
 import fs from "fs";
+import { parseTextractResult, parseTextractResult_AI } from "../utils/textProcessing.js";
+
+// Verifica que la variable de entorno AWS_REGION esté definida
+if (!process.env.AWS_REGION) {
+  throw new Error("La variable de entorno AWS_REGION no está definida");
+}
+
+let AIMode = false;
 
 // Inicializa el cliente de Textract
 const textract = new AWS.Textract({ region: process.env.AWS_REGION });
 
+// Función para extraer texto de un archivo con Textract
 export const extractWithTextract = async (filePath) => {
   try {
+    // Verifica que el archivo exista antes de leerlo
+    if (!fs.existsSync(filePath)) {
+      throw new Error(`El archivo ${filePath} no existe`);
+    }
+
     // Lee el archivo PDF o imagen
     const fileContent = fs.readFileSync(filePath);
 
@@ -17,28 +31,20 @@ export const extractWithTextract = async (filePath) => {
     };
 
     const response = await textract.detectDocumentText(params).promise();
+    console.log("Datos extraídos con Textract:", response);
 
     // Procesa la respuesta de Textract
-    const extractedText = parseTextractResult(response);
-
-    return extractedText;
+    if (AIMode) {
+      const extractedText = await parseTextractResult_AI(response);
+      console.log("Texto extraído con Textract y OpenAI:", extractedText);
+      return extractedText;
+    } else {
+      const extractedText = parseTextractResult(response);
+      console.log("Texto extraído con Textract:", extractedText);
+      return extractedText;
+    }
   } catch (error) {
     console.error("Error al extraer datos con Textract:", error);
     throw error;
   }
-};
-
-// Función para procesar los datos obtenidos de Textract
-const parseTextractResult = (response) => {
-  let extractedLines = [];
-
-  // Itera sobre los bloques de respuesta de Textract
-  response.Blocks.forEach((block) => {
-    if (block.BlockType === "LINE") {
-      // Guarda el texto detectado en el array
-      extractedLines.push(block.Text);
-    }
-  });
-
-  return extractedLines;
 };
