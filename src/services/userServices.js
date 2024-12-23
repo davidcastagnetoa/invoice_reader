@@ -1,7 +1,7 @@
 import User from "../models/userModel.js";
 import { v4 as uuidv4 } from "uuid";
 
-// Función para insertar o actualizar un usuario de Google
+// Función para insertar o actualizar un usuario de Google. For GoogleAuth Controller
 export const insertOrUpdateGoogleUser = async (userName, userEmail, userPicture, sub) => {
   try {
     let user = await User.findOne({ where: { email: userEmail } });
@@ -13,11 +13,13 @@ export const insertOrUpdateGoogleUser = async (userName, userEmail, userPicture,
         email: userEmail,
         picture: userPicture,
       });
+      console.log("Usuario creado:", user);
     } else {
       // Actualiza los datos del usuario si ya existe
       user.name = userName;
       user.picture = userPicture;
       await user.save();
+      console.log("Usuario actualizado:", user);
     }
 
     return user;
@@ -27,7 +29,34 @@ export const insertOrUpdateGoogleUser = async (userName, userEmail, userPicture,
   }
 };
 
-// Función para crear un usuario
+// Función para insertar o actualizar un usuario de GitHub. For GithubAuth Controller
+export const insertOrUpdateGithubUser = async (userName, userEmail, userPicture, sub) => {
+  try {
+    let user = await User.findOne({ where: { email: userEmail } });
+
+    if (!user) {
+      user = await User.create({
+        id: sub,
+        name: userName,
+        email: userEmail,
+        picture: userPicture,
+      });
+      console.log("Usuario creado:", user);
+    } else {
+      // Actualiza los datos del usuario si ya existe
+      user.name = userName;
+      await user.save();
+      console.log("Usuario actualizado:", user);
+    }
+
+    return user;
+  } catch (error) {
+    console.log("Error en insertOrUpdateGithubUser:", error.message);
+    throw error;
+  }
+};
+
+// Función para crear un usuario. For Register Controller
 export const createUser = async (userData) => {
   const { name, email, password, cif, client_name, direccion } = userData;
 
@@ -59,7 +88,7 @@ export const createUser = async (userData) => {
   }
 };
 
-// Función para buscar un usuario por email
+// Función para buscar un usuario por email .For Login Controller
 export const findUserByEmail = async (email) => {
   try {
     const user = await User.findOne({ where: { email } });

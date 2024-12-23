@@ -1,5 +1,5 @@
 import express from "express";
-import { register, login, googleLogin } from "../controllers/userController.js";
+import { register, login, googleLogin, githubLogin } from "../controllers/userController.js";
 
 const router = express.Router();
 
@@ -11,5 +11,8 @@ router.post("/login", login);
 
 // Route to login with Google
 router.post("/google-login", googleLogin);
+
+// Route to login with GitHub
+router.post("/github-login", githubLogin);
 
 export default router;

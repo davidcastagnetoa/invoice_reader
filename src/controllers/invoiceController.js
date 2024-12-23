@@ -8,13 +8,15 @@ import {
   updateInvoiceInDB,
   deleteInvoiceFromDB,
 } from "../services/invoiceService.js";
+import { config } from "../config/config.js";
 
+// Función para procesar una factura
 export const processInvoice = async (req, res) => {
   try {
     const filePath = req.file.path;
     let extractedData;
 
-    if (process.env.NODE_ENV === "production") {
+    if (config.environment === "production") {
       extractedData = await extractWithTextract(filePath);
     } else {
       extractedData = await extractWithTesseract(filePath);
@@ -55,7 +57,8 @@ export const processInvoice = async (req, res) => {
 
 export const getInvoices = async (req, res) => {
   try {
-    const invoices = await getInvoicesFromDB();
+    const userId = req.user.id;
+    const invoices = await getInvoicesFromDB(userId);
     res.status(200).json(invoices);
   } catch (error) {
     console.error("Error al obtener las facturas:", error);

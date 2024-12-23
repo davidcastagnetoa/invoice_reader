@@ -1,10 +1,7 @@
 import { OAuth2Client } from "google-auth-library";
+import { config } from "../config/config.js";
 
-const client = new OAuth2Client(
-  process.env.GOOGLE_CLIENT_ID,
-  process.env.GOOGLE_CLIENT_SECRET,
-  process.env.GOOGLE_REDIRECT_URI
-);
+const client = new OAuth2Client(config.googleClientId, config.googleClientSecret, config.googleRedirectUri);
 
 // Función para obtener la información del usuario de Google
 export const getGoogleUser = async (code) => {
@@ -18,7 +15,7 @@ export const getGoogleUser = async (code) => {
 
     const ticket = await client.verifyIdToken({
       idToken: tokens.id_token,
-      audience: process.env.GOOGLE_CLIENT_ID,
+      audience: config.googleClientId,
     });
 
     const payload = ticket.getPayload();

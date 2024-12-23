@@ -1,5 +1,20 @@
 import jwt from "jsonwebtoken";
+import { config } from "../config/config.js";
 
 export const generateAccessToken = (user) => {
-  return jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, { expiresIn: "1h" });
+  try {
+    return jwt.sign(user, config.accessTokenSecret, { expiresIn: "1h" });
+  } catch (error) {
+    console.error(error);
+    return null;
+  }
+};
+
+export const generateRefreshToken = (user) => {
+  try {
+    return jwt.sign(user, config.refreshTokenSecret);
+  } catch (error) {
+    console.error(error);
+    return null;
+  }
 };

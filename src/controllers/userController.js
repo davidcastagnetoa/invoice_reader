@@ -1,7 +1,13 @@
 import bcrypt from "bcryptjs";
 import { getGoogleUser } from "../services/googleAuthService.js";
-import { createUser, insertOrUpdateGoogleUser } from "../services/userServices.js";
+import {
+  createUser,
+  findUserByEmail,
+  insertOrUpdateGithubUser,
+  insertOrUpdateGoogleUser,
+} from "../services/userServices.js";
 import { generateAccessToken, generateRefreshToken } from "../utils/token.js";
+import { getGithubUser } from "../services/githubAuthService.js";
 
 // Función para registrar un nuevo usuario
 export const register = async (req, res) => {
@@ -70,6 +76,38 @@ export const googleLogin = async (req, res) => {
     });
   } catch (err) {
     console.log("Error en googleLogin:", err);
+    res.status(err.status || 500).send(err.message || "Internal Server Error");
+  }
+};
+
+// Función para iniciar sesión con GitHub
+export const githubLogin = async (req, res) => {
+  const { code } = req.body;
+
+  try {
+    const { userName, userEmail, userPicture, sub } = await getGithubUser(code);
+
+    const userData = await insertOrUpdateGithubUser(userName, userEmail, userPicture, sub);
+
+    const githubPayload = {
+      username: userData.username,
+      email: userData.email,
+      picture: userData.picture,
+    };
+
+    const accessToken = generateAccessToken(githubPayload);
+    const refreshToken = generateRefreshToken(githubPayload);
+
+    console.log("\n Token de acceso generado en Login de GitHub es:", accessToken);
+    console.log("\n Token de refresco generado en Login de GitHub es:", refreshToken);
+
+    res.status(200).json({
+      accessToken,
+      refreshToken,
+      userInfo: githubPayload,
+    });
+  } catch (err) {
+    console.log("Error en githubLogin:", err);
     res.status(err.status || 500).send(err.message || "Internal Server Error");
   }
 };

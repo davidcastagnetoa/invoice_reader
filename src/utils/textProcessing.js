@@ -2,9 +2,10 @@
 // ! ADVERTENCIA: Archivo crìtico. Evitar modificar sin conocimientos previos y supervisión.
 
 import { OpenAIApi, Configuration } from "openai";
+import { config } from "../config/config.js";
 
 const configuration = new Configuration({
-  apiKey: process.env.OPENAI_API_KEY,
+  apiKey: config.openaiApiKey,
 });
 
 const openai = new OpenAIApi(configuration);

@@ -2,13 +2,14 @@
 import { processInvoice } from "../src/controllers/invoiceController.js";
 import { extractWithTextract } from "../src/services/textractService.js";
 import { extractWithTesseract } from "../src/services/tesseactService.js";
+import { config } from "../src/config/config.js";
 
 jest.mock("../src/services/textractService.js");
 jest.mock("../src/services/tesseactService.js");
 
 describe("processInvoice", () => {
   it("should return extracted data using Textract in production", async () => {
-    process.env.ENVIRONMENT = "production";
+    config.environment = "production";
     const req = { file: { path: "test.pdf" } };
     const res = { json: jest.fn(), status: jest.fn().mockReturnThis() };
 
@@ -20,7 +21,7 @@ describe("processInvoice", () => {
   });
 
   it("should return extracted data using Tesseract in development", async () => {
-    process.env.ENVIRONMENT = "development";
+    config.environment = "development";
     const req = { file: { path: "test.pdf" } };
     const res = { json: jest.fn(), status: jest.fn().mockReturnThis() };
 

@@ -23,7 +23,7 @@ export const createInvoice = async (invoiceData) => {
   }
 };
 
-export const getInvoicesByUserId = async (userId) => {
+export const getInvoicesFromDB = async (userId) => {
   try {
     const invoices = await Invoice.findAll({
       where: { user_id: userId },
@@ -36,7 +36,7 @@ export const getInvoicesByUserId = async (userId) => {
   }
 };
 
-export const getInvoiceById = async (invoiceId) => {
+export const getInvoiceByIdFromDB = async (invoiceId) => {
   try {
     const invoice = await Invoice.findByPk(invoiceId, {
       include: [{ model: User, as: "user" }],
@@ -51,7 +51,7 @@ export const getInvoiceById = async (invoiceId) => {
   }
 };
 
-export const updateInvoice = async (invoiceId, updateData) => {
+export const updateInvoiceInDB = async (invoiceId, updateData) => {
   try {
     const invoice = await Invoice.findByPk(invoiceId);
     if (!invoice) {
@@ -65,7 +65,7 @@ export const updateInvoice = async (invoiceId, updateData) => {
   }
 };
 
-export const deleteInvoice = async (invoiceId) => {
+export const deleteInvoiceFromDB = async (invoiceId) => {
   try {
     const invoice = await Invoice.findByPk(invoiceId);
     if (!invoice) {

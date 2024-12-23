@@ -1,16 +1,17 @@
 import AWS from "aws-sdk";
 import fs from "fs";
+import { config } from "../config/config.js";
 import { parseTextractResult, parseTextractResult_AI } from "../utils/textProcessing.js";
 
 // Verifica que la variable de entorno AWS_REGION esté definida
-if (!process.env.AWS_REGION) {
+if (!config.awsRegion) {
   throw new Error("La variable de entorno AWS_REGION no está definida");
 }
 
 let AIMode = false;
 
 // Inicializa el cliente de Textract
-const textract = new AWS.Textract({ region: process.env.AWS_REGION });
+const textract = new AWS.Textract({ region: config.awsRegion });
 
 // Función para extraer texto de un archivo con Textract
 export const extractWithTextract = async (filePath) => {
