@@ -1,7 +1,7 @@
 import Invoice from "../models/invoiceModel.js";
 import User from "../models/userModel.js";
 
-// Función para guardar los datos extraídos de una factura
+// Servicio para guardar los datos extraídos de una factura
 export const saveExtractedInvoiceData = async (invoiceData) => {
   try {
     const invoice = await Invoice.create(invoiceData);
@@ -12,7 +12,7 @@ export const saveExtractedInvoiceData = async (invoiceData) => {
   }
 };
 
-// Otras funciones CRUD existentes
+// Servicio para crear una factura en la base de datos
 export const createInvoice = async (invoiceData) => {
   try {
     const invoice = await Invoice.create(invoiceData);
@@ -23,6 +23,7 @@ export const createInvoice = async (invoiceData) => {
   }
 };
 
+// Servicio para obtener las facturas de un usuario
 export const getInvoicesFromDB = async (userId) => {
   try {
     const invoices = await Invoice.findAll({
@@ -36,6 +37,7 @@ export const getInvoicesFromDB = async (userId) => {
   }
 };
 
+// Servicio para obtener una factura por ID
 export const getInvoiceByIdFromDB = async (invoiceId) => {
   try {
     const invoice = await Invoice.findByPk(invoiceId, {
@@ -51,6 +53,7 @@ export const getInvoiceByIdFromDB = async (invoiceId) => {
   }
 };
 
+// Servicio para actualizar una factura en la base de datos
 export const updateInvoiceInDB = async (invoiceId, updateData) => {
   try {
     const invoice = await Invoice.findByPk(invoiceId);
@@ -65,6 +68,7 @@ export const updateInvoiceInDB = async (invoiceId, updateData) => {
   }
 };
 
+// Servicio para eliminar una factura de la base de datos
 export const deleteInvoiceFromDB = async (invoiceId) => {
   try {
     const invoice = await Invoice.findByPk(invoiceId);

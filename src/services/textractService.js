@@ -18,6 +18,7 @@ export const extractWithTextract = async (filePath) => {
   try {
     // Verifica que el archivo exista antes de leerlo
     if (!fs.existsSync(filePath)) {
+      console.log(`El archivo ${filePath} no existe`);
       throw new Error(`El archivo ${filePath} no existe`);
     }
 

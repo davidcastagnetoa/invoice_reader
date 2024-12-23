@@ -1,7 +1,7 @@
 import User from "../models/userModel.js";
 import { v4 as uuidv4 } from "uuid";
 
-// Función para insertar o actualizar un usuario de Google. For GoogleAuth Controller
+// Servicio para insertar o actualizar un usuario de Google. For GoogleAuth Controller
 export const insertOrUpdateGoogleUser = async (userName, userEmail, userPicture, sub) => {
   try {
     let user = await User.findOne({ where: { email: userEmail } });
@@ -29,7 +29,7 @@ export const insertOrUpdateGoogleUser = async (userName, userEmail, userPicture,
   }
 };
 
-// Función para insertar o actualizar un usuario de GitHub. For GithubAuth Controller
+// Servicio para insertar o actualizar un usuario de GitHub. For GithubAuth Controller
 export const insertOrUpdateGithubUser = async (userName, userEmail, userPicture, sub) => {
   try {
     let user = await User.findOne({ where: { email: userEmail } });
@@ -56,7 +56,7 @@ export const insertOrUpdateGithubUser = async (userName, userEmail, userPicture,
   }
 };
 
-// Función para crear un usuario. For Register Controller
+// Servicio para crear un usuario. For Register Controller
 export const createUser = async (userData) => {
   const { name, email, password, cif, client_name, direccion } = userData;
 
@@ -88,7 +88,7 @@ export const createUser = async (userData) => {
   }
 };
 
-// Función para buscar un usuario por email .For Login Controller
+// Servicio para buscar un usuario por email .For Login Controller
 export const findUserByEmail = async (email) => {
   try {
     const user = await User.findOne({ where: { email } });

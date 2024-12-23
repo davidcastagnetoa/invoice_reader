@@ -10,15 +10,17 @@ import {
 } from "../services/invoiceService.js";
 import { config } from "../config/config.js";
 
-// Función para procesar una factura
+// Controlador para procesar una factura
 export const processInvoice = async (req, res) => {
   try {
     const filePath = req.file.path;
     let extractedData;
 
     if (config.environment === "production") {
+      console.log("Modo Produccion: Extrayendo datos con Amazon Textract...");
       extractedData = await extractWithTextract(filePath);
     } else {
+      console.log("Modo Desarrollador: Extrayendo datos con Tesseract OCR...");
       extractedData = await extractWithTesseract(filePath);
     }
 
@@ -38,6 +40,7 @@ export const processInvoice = async (req, res) => {
     };
 
     const savedInvoice = await saveExtractedInvoiceData(invoiceData);
+    console.log("Factura procesada correctamente:", savedInvoice);
 
     // Elimina el archivo temporalmente subido
     fs.unlinkSync(filePath);
@@ -55,6 +58,7 @@ export const processInvoice = async (req, res) => {
   }
 };
 
+// Controlador para obtener todas las facturas de un usuario.
 export const getInvoices = async (req, res) => {
   try {
     const userId = req.user.id;
@@ -66,6 +70,7 @@ export const getInvoices = async (req, res) => {
   }
 };
 
+// Controlador para obtener una factura por ID.
 export const getInvoiceById = async (req, res) => {
   try {
     const invoiceId = req.params.id;
@@ -80,6 +85,7 @@ export const getInvoiceById = async (req, res) => {
   }
 };
 
+// Controlador para actualizar una factura por ID.
 export const updateInvoice = async (req, res) => {
   try {
     const invoiceId = req.params.id;
@@ -95,6 +101,7 @@ export const updateInvoice = async (req, res) => {
   }
 };
 
+// Controlador para eliminar una factura por ID.
 export const deleteInvoice = async (req, res) => {
   try {
     const invoiceId = req.params.id;

@@ -9,7 +9,7 @@ import {
 import { generateAccessToken, generateRefreshToken } from "../utils/token.js";
 import { getGithubUser } from "../services/githubAuthService.js";
 
-// Función para registrar un nuevo usuario
+// Controlador para registrar un nuevo usuario
 export const register = async (req, res) => {
   const { name, email, password, cif, client_name, direccion } = req.body;
 
@@ -29,7 +29,7 @@ export const register = async (req, res) => {
   }
 };
 
-// Función para iniciar sesión
+// Controlador para iniciar sesión
 export const login = async (req, res) => {
   const { email, password } = req.body;
 
@@ -48,7 +48,7 @@ export const login = async (req, res) => {
   }
 };
 
-// Función para iniciar sesión con Google
+// Controlador para iniciar sesión con Google
 export const googleLogin = async (req, res) => {
   const { code } = req.body;
 
@@ -80,7 +80,7 @@ export const googleLogin = async (req, res) => {
   }
 };
 
-// Función para iniciar sesión con GitHub
+// Controlador para iniciar sesión con GitHub
 export const githubLogin = async (req, res) => {
   const { code } = req.body;
 
