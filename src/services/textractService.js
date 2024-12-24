@@ -8,17 +8,21 @@ if (!config.awsRegion) {
   throw new Error("La variable de entorno AWS_REGION no está definida");
 }
 
-let AIMode = false;
+let PremiumFunction = false;
+
+// Función para activar o desactivar la función premium
+export const setPremiumFunction = (mode) => {
+  PremiumFunction = mode;
+};
 
 // Inicializa el cliente de Textract
 const textract = new AWS.Textract({ region: config.awsRegion });
 
-// Función para extraer texto de un archivo con Textract
+// Servicio para extraer texto de un archivo con Textract
 export const extractWithTextract = async (filePath) => {
   try {
     // Verifica que el archivo exista antes de leerlo
     if (!fs.existsSync(filePath)) {
-      console.log(`El archivo ${filePath} no existe`);
       throw new Error(`El archivo ${filePath} no existe`);
     }
 
@@ -36,7 +40,7 @@ export const extractWithTextract = async (filePath) => {
     console.log("Datos extraídos con Textract:", response);
 
     // Procesa la respuesta de Textract
-    if (AIMode) {
+    if (PremiumFunction) {
       const extractedText = await parseTextractResult_AI(response);
       console.log("Texto extraído con Textract y OpenAI:", extractedText);
       return extractedText;

@@ -98,3 +98,14 @@ export const findUserByEmail = async (email) => {
     throw error;
   }
 };
+
+// Servicio para buscar un usuario por id. For middleware checkPremium
+export const findUserById = async (id) => {
+  try {
+    const user = await User.findByPk(id);
+    return user;
+  } catch (error) {
+    console.log("Error en findUserById:", error.message);
+    throw error;
+  }
+};

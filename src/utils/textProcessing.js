@@ -62,6 +62,7 @@ export const parseTesseractResult = (text) => {
 };
 
 // Función para procesar los resultados de Textract y extraer la información relevante utilizando OpenAI. //! EXPERIMENTAL
+// * Funcion PREMIUM
 export const parseTextractResult_AI = async (response) => {
   let extractedLines = [];
 
@@ -88,6 +89,7 @@ export const parseTextractResult_AI = async (response) => {
 };
 
 // Función para procesar los resultados de Tesseract y extraer la información relevante utilizando OpenAI. //! EXPERIMENTAL
+// * Funcion PREMIUM
 export const parseTesseractResult_AI = async (text) => {
   // Llama a OpenAI para analizar el texto
   const completion = await openai.createCompletion({
