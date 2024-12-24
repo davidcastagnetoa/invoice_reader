@@ -9,6 +9,7 @@ import {
   deleteInvoice,
   processInvoice,
 } from "../controllers/invoiceController.js";
+import { validateInvoice } from "../middleware/validateInvoice.js";
 
 const router = Router();
 const upload = multer({ dest: "uploads/" });
@@ -27,6 +28,6 @@ router.put("/:id", authenticateToken, updateInvoice);
 router.delete("/:id", authenticateToken, deleteInvoice);
 
 // Ruta para procesar una factura
-router.post("/process", authenticateToken, checkPremium, upload.single("file"), processInvoice);
+router.post("/process", authenticateToken, checkPremium, upload.single("file"), validateInvoice, processInvoice);
 
 export default router;
