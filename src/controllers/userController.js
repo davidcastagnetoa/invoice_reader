@@ -8,13 +8,32 @@ import {
 } from "../services/userServices.js";
 import { generateAccessToken, generateRefreshToken } from "../utils/token.js";
 import { getGithubUser } from "../services/githubAuthService.js";
+import CustomError from "../utils/customError.js";
 
-// Controlador para registrar un nuevo usuario
+// * Controlador para registrar un nuevo usuario
 export const register = async (req, res) => {
-  const { name, email, password, cif, client_name, direccion } = req.body;
+  const { name, email, picture, password, cif, client_name, direccion, isPremium } = req.body;
+
+  console.debug("name: ", name);
+  console.debug("email: ", email);
+  console.debug("picture: ", picture);
+  console.debug("cif: ", cif);
+  console.debug("client_name: ", client_name);
+  console.debug("direccion: ", direccion);
+  console.debug("isPremium: ", isPremium);
+
+  // Verificar que todos los campos requeridos están presentes
+  if (!name || !email || !password || !cif || !client_name || !direccion || !isPremium) {
+    console.error("Todos los campos son requeridos");
+    return res.status(400).json({ error: "Todos los campos son requeridos" });
+  }
 
   try {
-    const newUser = await createUser({ name, email, password, cif, client_name, direccion });
+    // Usa la imagen por defecto si no se proporciona
+    const userPicture = picture || "/images/avatar.png";
+
+    // Crea un nuevo usuario
+    const newUser = await createUser({ name, email, userPicture, password, cif, client_name, direccion, isPremium });
 
     // Genera un token de acceso
     const token = generateAccessToken({ id: newUser.id, email: newUser.email });
@@ -22,8 +41,8 @@ export const register = async (req, res) => {
     res.status(201).json({ token });
   } catch (error) {
     console.error("Error al registrar el usuario:", error);
-    if (error.message === "El usuario ya existe") {
-      return res.status(400).json({ error: error.message });
+    if (error instanceof CustomError) {
+      return res.status(400).json({ error: error.message, code: error.code });
     }
     res.status(500).json({ error: "Error al registrar el usuario" });
   }

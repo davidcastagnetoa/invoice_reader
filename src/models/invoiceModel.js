@@ -7,6 +7,7 @@ const Invoice = sequelize.define(
   {
     id: {
       type: DataTypes.STRING,
+      defaultValue: DataTypes.UUIDV4,
       primaryKey: true,
     },
     user_id: {
@@ -72,9 +73,5 @@ const Invoice = sequelize.define(
     updatedAt: "updated_at",
   }
 );
-
-// Establecer la relación entre User e Invoice
-User.hasMany(Invoice, { foreignKey: "user_id", as: "invoices" });
-Invoice.belongsTo(User, { foreignKey: "user_id", as: "user" });
 
 export default Invoice;

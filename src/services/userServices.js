@@ -1,5 +1,8 @@
 import User from "../models/userModel.js";
+import bcrypt from "bcryptjs";
 import { v4 as uuidv4 } from "uuid";
+import sequelize from "../config/database.js";
+import CustomError from "../utils/customError.js";
 
 // Servicio para insertar o actualizar un usuario de Google. For GoogleAuth Controller
 export const insertOrUpdateGoogleUser = async (userName, userEmail, userPicture, sub) => {
@@ -58,13 +61,18 @@ export const insertOrUpdateGithubUser = async (userName, userEmail, userPicture,
 
 // Servicio para crear un usuario. For Register Controller
 export const createUser = async (userData) => {
-  const { name, email, password, cif, client_name, direccion } = userData;
+  const { name, email, picture, password, cif, client_name, direccion, isPremium } = userData;
 
   try {
     // Verifica si el usuario ya existe
-    const existingUser = await User.findOne({ where: { email } });
+    const existingUser = await User.findOne({
+      where: sequelize.where(sequelize.fn("LOWER", sequelize.col("email")), email.toLowerCase()),
+    });
+
     if (existingUser) {
-      throw new Error("El usuario ya existe");
+      console.debug("Usuario existente. Datos del usuario:", existingUser.dataValues);
+      console.error("Error en el servicio. El usuario ya existe");
+      throw new CustomError("El usuario ya existe. Por favor, inicie sesión.", "USER_ALREADY_EXISTS");
     }
 
     // Encripta la contraseña
@@ -75,16 +83,23 @@ export const createUser = async (userData) => {
       id: uuidv4(),
       name,
       email,
+      picture: picture || "/images/avatar.png",
       password: hashedPassword,
       cif,
       client_name,
       direccion,
+      isPremium,
     });
+
+    console.log("Usuario creado correctamente:", newUser);
 
     return newUser;
   } catch (error) {
-    console.log("Error en createUser:", error.message);
-    throw error;
+    if (error instanceof CustomError && error.code === "USER_ALREADY_EXISTS") {
+      throw error; // Re-lanza el error para que el controlador lo maneje
+    }
+    console.error("Error en el servicio createUser:", error.message);
+    throw new CustomError("Error al registrar el usuario", "CREATE_USER_ERROR");
   }
 };
 

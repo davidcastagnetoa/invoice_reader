@@ -39,7 +39,7 @@ export const extractWithTextract = async (filePath) => {
     const response = await textract.detectDocumentText(params).promise();
     console.log("Datos extraídos con Textract:", response);
 
-    // Procesa la respuesta de Textract
+    // * Procesa la respuesta de Textract
     if (PremiumFunction) {
       const extractedText = await parseTextractResult_AI(response);
       console.log("Texto extraído con Textract y OpenAI:", extractedText);

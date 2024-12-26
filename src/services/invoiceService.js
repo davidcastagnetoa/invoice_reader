@@ -1,11 +1,24 @@
+import { Op } from "sequelize";
 import Invoice from "../models/invoiceModel.js";
 import User from "../models/userModel.js";
 
-// Servicio para guardar los datos extraídos de una factura
+// * Servicio para guardar los datos extraídos de una factura
 export const saveExtractedInvoiceData = async (invoiceData) => {
   try {
-    const invoice = await Invoice.create(invoiceData);
-    return invoice;
+    console.debug("Guardando los datos extraídos de la factura:", invoiceData);
+
+    // Formatea la fecha y los valores numéricos
+    const formattedInvoiceData = {
+      ...invoiceData,
+      invoice_date: new Date(invoiceData.invoice_date),
+      subtotal: parseFloat(invoiceData.subtotal.replace(/[^0-9.-]+/g, "")),
+      vat_percentage: parseFloat(invoiceData.vat_percentage),
+      vat_amount: parseFloat(invoiceData.vat_amount.replace(/[^0-9.-]+/g, "")),
+      total: parseFloat(invoiceData.total.replace(/[^0-9.-]+/g, "")),
+    };
+
+    const savedInvoice = await Invoice.create(formattedInvoiceData);
+    return savedInvoice;
   } catch (error) {
     console.error("Error al guardar los datos de la factura:", error);
     throw error;
@@ -37,10 +50,14 @@ export const getInvoicesFromDB = async (userId) => {
   }
 };
 
-// Servicio para obtener una factura por ID
-export const getInvoiceByIdFromDB = async (invoiceId) => {
+// Servicio para obtener una factura por ID o número de factura
+export const getInvoiceByIdOrNumberFromDB = async (invoiceId, invoiceNumber) => {
   try {
-    const invoice = await Invoice.findByPk(invoiceId, {
+    console.log("Obteniendo la factura con ID o número de factura:", invoiceId, invoiceNumber);
+    const invoice = await Invoice.findOne({
+      where: {
+        [Op.or]: [{ id: invoiceId }, { invoice_number: invoiceNumber }],
+      },
       include: [{ model: User, as: "user" }],
     });
     if (!invoice) {

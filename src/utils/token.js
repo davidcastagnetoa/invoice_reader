@@ -3,7 +3,7 @@ import { config } from "../config/config.js";
 
 export const generateAccessToken = (user) => {
   try {
-    return jwt.sign(user, config.accessTokenSecret, { expiresIn: "1h" });
+    return jwt.sign(user, config.accessTokenSecret, { expiresIn: "2h" });
   } catch (error) {
     console.error(error);
     return null;

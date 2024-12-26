@@ -1,27 +1,29 @@
 import fs from "fs";
 import { extractWithTextract } from "../services/textractService.js";
 import { extractWithTesseract } from "../services/tesseactService.js";
-import { saveExtractedInvoiceData } from "../services/invoiceService.js";
-import {
-  getInvoicesFromDB,
-  getInvoiceByIdFromDB,
-  updateInvoiceInDB,
-  deleteInvoiceFromDB,
-} from "../services/invoiceService.js";
+import { getInvoiceByIdOrNumberFromDB, saveExtractedInvoiceData } from "../services/invoiceService.js";
+import { getInvoicesFromDB, updateInvoiceInDB, deleteInvoiceFromDB } from "../services/invoiceService.js";
 import { config } from "../config/config.js";
 
-// Controlador para procesar una factura
+// * Controlador para procesar una factura
 export const processInvoice = async (req, res) => {
   try {
+    if (!req.file || !req.file.path) {
+      console.error("No se ha cargado ningún archivo");
+      return res.status(400).json({ error: "No se ha cargado ningún archivo" });
+    }
+
     const filePath = req.file.path;
     let extractedData;
 
     if (config.environment === "production") {
       console.log("Modo Produccion: Extrayendo datos con Amazon Textract...");
       extractedData = await extractWithTextract(filePath);
+      console.log("Datos extraídos con éxito:", extractedData);
     } else {
       console.log("Modo Desarrollador: Extrayendo datos con Tesseract OCR...");
       extractedData = await extractWithTesseract(filePath);
+      console.log("Datos extraídos con éxito:", extractedData);
     }
 
     // Aquí puedes mapear los datos extraídos a los campos del modelo Invoice
@@ -38,6 +40,15 @@ export const processInvoice = async (req, res) => {
       vat_amount: extractedData.vat_amount,
       total: extractedData.total,
     };
+
+    console.debug("Datos de la factura extraídos:", invoiceData);
+
+    // - Verifica si la factura ya existe en la base de datos (PENDIENTE)
+    const existingInvoice = await getInvoiceByIdOrNumberFromDB(invoiceData.user_id, invoiceData.invoice_number);
+    if (existingInvoice) {
+      console.error("La factura ya existe para este usuario");
+      return res.status(400).json({ error: "La factura ya existe para este usuario" });
+    }
 
     const savedInvoice = await saveExtractedInvoiceData(invoiceData);
     console.log("Factura procesada correctamente:", savedInvoice);
@@ -74,7 +85,9 @@ export const getInvoices = async (req, res) => {
 export const getInvoiceById = async (req, res) => {
   try {
     const invoiceId = req.params.id;
-    const invoice = await getInvoiceByIdFromDB(invoiceId);
+    const invoiceNumber = req.query.invoice_number;
+
+    const invoice = await getInvoiceByIdOrNumberFromDB(invoiceId, invoiceNumber);
     if (!invoice) {
       return res.status(404).json({ error: "Factura no encontrada" });
     }

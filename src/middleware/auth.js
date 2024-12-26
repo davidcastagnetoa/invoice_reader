@@ -6,17 +6,17 @@ export const authenticateToken = (req, res, next) => {
   const token = authHeader && authHeader.split(" ")[1];
 
   if (token == null) {
-    console.log("There is no token. Access denied!");
+    console.warn("There is no auth token. Access denied!");
     return res.sendStatus(401);
   }
 
   jwt.verify(token, config.accessTokenSecret, (err, user) => {
     if (err) {
-      console.log("Token is invalid");
+      console.error("auth Token is invalid", err);
       return res.sendStatus(403);
     }
     req.user = user;
-    console.log("Token is valid");
+    console.log("auth Token is valid");
     next();
   });
 };

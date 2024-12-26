@@ -17,8 +17,10 @@ export const validateInvoice = [
     try {
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
+        console.error("Error en el middleware de validación:", errors.array());
         return res.status(400).json({ errors: errors.array() });
       }
+      console.log("Validación correcta");
       next();
     } catch (error) {
       console.error("Error en el middleware de validación:", error);

@@ -7,13 +7,16 @@ export const checkPremium = async (req, res, next) => {
     const user = await findUserById(userId);
 
     if (!user) {
+      console.error("Usuario no encontrado");
       return res.status(404).json({ error: "Usuario no encontrado" });
     }
 
     if (user.isPremium) {
+      console.debug("Usuario premium, acceso a funciones premium");
       setPremiumFunction(true);
     } else {
       setPremiumFunction(false);
+      console.debug("Usuario no premium, acceso a funciones premium restringido");
       return res.status(403).json({ error: "Acceso denegado. Función premium." });
     }
 

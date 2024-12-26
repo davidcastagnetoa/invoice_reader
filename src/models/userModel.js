@@ -6,6 +6,7 @@ const User = sequelize.define(
   {
     id: {
       type: DataTypes.STRING,
+      // defaultValue: DataTypes.UUIDV4,
       primaryKey: true,
     },
     name: {
@@ -20,6 +21,7 @@ const User = sequelize.define(
     picture: {
       type: DataTypes.STRING,
       allowNull: false,
+      defaultValue: "/images/avatar.png", // Establece la imagen por defecto
     },
     password: {
       type: DataTypes.STRING,
