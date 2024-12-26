@@ -28,7 +28,7 @@ router.put("/:id", authenticateToken, updateInvoice);
 router.delete("/:id", authenticateToken, deleteInvoice);
 
 // Ruta para procesar una factura
-router.post("/process", authenticateToken, checkPremium, upload.single("file"), processInvoice);
-// router.post("/process", authenticateToken, checkPremium, upload.single("file"), validateInvoice, processInvoice);
+router.post("/process", authenticateToken, checkPremium, upload.single("file"), processInvoice); //! For Development
+// router.post("/process", authenticateToken, checkPremium, upload.single("file"), validateInvoice, processInvoice); //! For Production
 
 export default router;

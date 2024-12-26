@@ -1,12 +1,24 @@
-import AWS from "aws-sdk";
-import fs from "fs";
 import { config } from "../config/config.js";
 import { parseTextractResult, parseTextractResult_AI } from "../utils/textProcessing.js";
+import { AnalyzeDocumentCommand } from "@aws-sdk/client-textract";
+import { TextractClient } from "@aws-sdk/client-textract";
+
+// Set the AWS Region.
+const REGION = config.awsRegion;
 
 // Verifica que la variable de entorno AWS_REGION esté definida
-if (!config.awsRegion) {
+if (!REGION) {
   throw new Error("La variable de entorno AWS_REGION no está definida");
 }
+
+// Create SNS service object.
+const textractClient = new TextractClient({
+  region: REGION,
+  credentials: {
+    accessKeyId: config.awsAccessKeyId,
+    secretAccessKey: config.awsSecretAccessKey,
+  },
+});
 
 let PremiumFunction = false;
 
@@ -15,31 +27,27 @@ export const setPremiumFunction = (mode) => {
   PremiumFunction = mode;
 };
 
-// Inicializa el cliente de Textract
-const textract = new AWS.Textract({ region: config.awsRegion });
-
-// Servicio para extraer texto de un archivo con Textract
-export const extractWithTextract = async (filePath) => {
+export const extractWithTextract = async (bucketName, documentName) => {
   try {
-    // Verifica que el archivo exista antes de leerlo
-    if (!fs.existsSync(filePath)) {
-      throw new Error(`El archivo ${filePath} no existe`);
-    }
-
-    // Lee el archivo PDF o imagen
-    const fileContent = fs.readFileSync(filePath);
-
-    // Llama a Textract con el contenido del archivo
+    // Set params
     const params = {
       Document: {
-        Bytes: fileContent,
+        S3Object: {
+          Bucket: bucketName,
+          Name: documentName,
+        },
       },
+      FeatureTypes: ["TABLES", "FORMS", "LAYOUT"], // "TABLES" || "FORMS" || "QUERIES" || "SIGNATURES" || "LAYOUT",
     };
 
-    const response = await textract.detectDocumentText(params).promise();
+    // const response = await textract.detectDocumentText(params).promise();
+    const analyzeDoc = new AnalyzeDocumentCommand(params);
+    console.log("\nExtrayendo datos con Textract...", analyzeDoc);
+
+    // Get the text from the document
+    const response = await textractClient.send(analyzeDoc);
     console.log("Datos extraídos con Textract:", response);
 
-    // * Procesa la respuesta de Textract
     if (PremiumFunction) {
       const extractedText = await parseTextractResult_AI(response);
       console.log("Texto extraído con Textract y OpenAI:", extractedText);
@@ -50,7 +58,7 @@ export const extractWithTextract = async (filePath) => {
       return extractedText;
     }
   } catch (error) {
-    console.error("Error al extraer datos con Textract:", error);
+    console.error("\nError al extraer datos con Textract:", error);
     throw error;
   }
 };

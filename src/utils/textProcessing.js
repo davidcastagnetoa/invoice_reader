@@ -19,7 +19,7 @@ const getDataFromOpenAI = async (pText) => {
         { role: "developer", content: "You are a helpful assistant." },
         {
           role: "user",
-          content: `Extract the following information from the text and return only the JSON object with the following structure (do not include any additional text, code fences, or formatting):\n\n{\n  "invoice_number": "string",\n  "invoice_date": "string",\n  "issuer_name": "string",\n  "client_cif": "string",\n  "client_name": "string",\n  "issuer_cif": "string",\n  "subtotal": "string",\n  "vat_percentage": "string",\n  "vat_amount": "string",\n  "total": "string"\n}\n\nText: ${pText}`,
+          content: `Extract the following information from the text and return only the JSON object with the following structure (do not include any additional text, code fences, or formatting):\n\n{\n  "invoice_number": "string",\n  "invoice_date": "string",\n  "issuer_name": "string",\n  "client_cif": "string",\n  "client_name": "string",\n  "issuer_cif": "string",\n  "subtotal": "string",\n  "vat_percentage": "string",\n  "vat_amount": "string",\n  "total": "string"\n}\nEnsure that the values for subtotal, vat_percentage, vat_amount, and total are always formatted correctly as floats separated by a comma, and for vat_percentage only include the numeric value as a float without the "%" symbol, even if the original text contains whole numbers (e.g., "subtotal: '3 €'" should be returned as "subtotal: '3,00 €'")\n\nText: ${pText}`,
         },
       ],
       temperature: 1,
@@ -30,7 +30,7 @@ const getDataFromOpenAI = async (pText) => {
     });
 
     // console.log("OpenAI raw completion:", completion);
-    console.debug("OpenAI raw completion data:", completion.data.choices[0].message.content);
+    console.debug("..:: OpenAI raw completion data:", completion.data.choices[0].message.content);
 
     if (!completion?.data?.choices?.[0]?.message?.content) {
       throw new Error("Respuesta de OpenAI inválida");

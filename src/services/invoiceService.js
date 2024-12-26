@@ -7,15 +7,31 @@ export const saveExtractedInvoiceData = async (invoiceData) => {
   try {
     console.debug("Guardando los datos extraídos de la factura:", invoiceData);
 
+    // Verificar que el user_id existe en la tabla Users
+    const user = await User.findByPk(invoiceData.user_id);
+
+    if (!user) {
+      console.error("Usuario no encontrado. No es posible asignar una factura a un usuario inexistente");
+      return { error: "Usuario no encontrado. No es posible asignar una factura a un usuario inexistente" };
+    }
+
+    const formatNumber = (value) => {
+      // Elimina los caracteres no deseados (euros y espacios) y cambia las comas por puntos para conversión decimal
+      const cleanedValue = value.replace(/[€\s]/g, "").replace(/,/g, ".");
+      return parseFloat(cleanedValue).toFixed(2); // Formatea el número con dos decimales
+    };
+
     // Formatea la fecha y los valores numéricos
     const formattedInvoiceData = {
       ...invoiceData,
       invoice_date: new Date(invoiceData.invoice_date),
-      subtotal: parseFloat(invoiceData.subtotal.replace(/[^0-9.-]+/g, "")),
-      vat_percentage: parseFloat(invoiceData.vat_percentage),
-      vat_amount: parseFloat(invoiceData.vat_amount.replace(/[^0-9.-]+/g, "")),
-      total: parseFloat(invoiceData.total.replace(/[^0-9.-]+/g, "")),
+      subtotal: formatNumber(invoiceData.subtotal),
+      vat_percentage: parseFloat(invoiceData.vat_percentage.replace(/[^0-9,]/g, "").replace(/,/g, ".")),
+      vat_amount: formatNumber(invoiceData.vat_amount),
+      total: formatNumber(invoiceData.total),
     };
+
+    console.debug("Datos de la factura formateados:", formattedInvoiceData);
 
     const savedInvoice = await Invoice.create(formattedInvoiceData);
     return savedInvoice;
@@ -53,17 +69,18 @@ export const getInvoicesFromDB = async (userId) => {
 // Servicio para obtener una factura por ID o número de factura
 export const getInvoiceByIdOrNumberFromDB = async (invoiceId, invoiceNumber) => {
   try {
-    console.log("Obteniendo la factura con ID o número de factura:", invoiceId, invoiceNumber);
+    console.log("Obteniendo la factura con ID y número de factura");
+    console.debug("Numero de factura:", invoiceNumber);
+    console.debug("ID de la factura:", invoiceId);
+
     const invoice = await Invoice.findOne({
       where: {
         [Op.or]: [{ id: invoiceId }, { invoice_number: invoiceNumber }],
       },
       include: [{ model: User, as: "user" }],
     });
-    if (!invoice) {
-      throw new Error("Factura no encontrada");
-    }
-    return invoice;
+
+    return invoice || null;
   } catch (error) {
     console.error("Error al obtener la factura:", error);
     throw error;

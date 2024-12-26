@@ -43,19 +43,19 @@ const Invoice = sequelize.define(
       allowNull: false,
     },
     subtotal: {
-      type: DataTypes.DECIMAL,
+      type: DataTypes.DECIMAL(10, 2),
       allowNull: false,
     },
     vat_percentage: {
-      type: DataTypes.DECIMAL,
+      type: DataTypes.DECIMAL(5, 2),
       allowNull: false,
     },
     vat_amount: {
-      type: DataTypes.DECIMAL,
+      type: DataTypes.DECIMAL(10, 2),
       allowNull: false,
     },
     total: {
-      type: DataTypes.DECIMAL,
+      type: DataTypes.DECIMAL(10, 2),
       allowNull: false,
     },
     created_at: {

@@ -1,9 +1,17 @@
+import AWS from "aws-sdk";
 import fs from "fs";
 import { extractWithTextract } from "../services/textractService.js";
 import { extractWithTesseract } from "../services/tesseactService.js";
-import { getInvoiceByIdOrNumberFromDB, saveExtractedInvoiceData } from "../services/invoiceService.js";
 import { getInvoicesFromDB, updateInvoiceInDB, deleteInvoiceFromDB } from "../services/invoiceService.js";
+import { getInvoiceByIdOrNumberFromDB, saveExtractedInvoiceData } from "../services/invoiceService.js";
 import { config } from "../config/config.js";
+
+// Configura el cliente de S3
+const s3 = new AWS.S3({
+  accessKeyId: config.awsAccessKeyId,
+  secretAccessKey: config.awsSecretAccessKey,
+  region: config.awsRegion,
+});
 
 // * Controlador para procesar una factura
 export const processInvoice = async (req, res) => {
@@ -14,16 +22,30 @@ export const processInvoice = async (req, res) => {
     }
 
     const filePath = req.file.path;
+    const bucketName = config.s3BucketName;
+    const key = `${Date.now()}_${req.file.originalname}`;
+
+    // Sube el archivo a S3
+    const uploadResult = await s3
+      .upload({
+        Bucket: bucketName,
+        Key: key,
+        Body: fs.createReadStream(filePath),
+      })
+      .promise();
+
+    console.log("Archivo subido a S3:", uploadResult.Location);
+
     let extractedData;
 
     if (config.environment === "production") {
       console.log("Modo Produccion: Extrayendo datos con Amazon Textract...");
-      extractedData = await extractWithTextract(filePath);
-      console.log("Datos extraídos con éxito:", extractedData);
+      extractedData = await extractWithTextract(bucketName, key);
+      console.log("Controlador en curso. Datos extraídos con éxito:", extractedData);
     } else {
       console.log("Modo Desarrollador: Extrayendo datos con Tesseract OCR...");
       extractedData = await extractWithTesseract(filePath);
-      console.log("Datos extraídos con éxito:", extractedData);
+      console.log("Controlador en curso. Datos extraídos con éxito:", extractedData);
     }
 
     // Aquí puedes mapear los datos extraídos a los campos del modelo Invoice
@@ -43,15 +65,25 @@ export const processInvoice = async (req, res) => {
 
     console.debug("Datos de la factura extraídos:", invoiceData);
 
-    // - Verifica si la factura ya existe en la base de datos (PENDIENTE)
+    // * Verifica si la factura ya existe en la base de datos (PENDIENTE)
+    console.debug("Verificando si la factura ya existe en la base de datos:");
     const existingInvoice = await getInvoiceByIdOrNumberFromDB(invoiceData.user_id, invoiceData.invoice_number);
+
     if (existingInvoice) {
-      console.error("La factura ya existe para este usuario");
+      console.error("La factura ya existe para este usuario. ID de la factura:", existingInvoice.id);
       return res.status(400).json({ error: "La factura ya existe para este usuario" });
     }
 
     const savedInvoice = await saveExtractedInvoiceData(invoiceData);
-    console.log("Factura procesada correctamente:", savedInvoice);
+
+    if (savedInvoice.error) {
+      console.error("Error al guardar la factura:", savedInvoice.error);
+      return res.status(400).json({ error: savedInvoice.error });
+    }
+
+    console.debug("Factura guardada con éxito");
+    console.debug("Datos del nueva nueva factura guaradad:", savedInvoice.dataValues);
+    console.debug("Nueva factura guardado correctamente en la base de datos?:", savedInvoice._options.isNewRecord);
 
     // Elimina el archivo temporalmente subido
     fs.unlinkSync(filePath);
@@ -77,7 +109,7 @@ export const getInvoices = async (req, res) => {
     res.status(200).json(invoices);
   } catch (error) {
     console.error("Error al obtener las facturas:", error);
-    res.status(500).json({ error: "Error al obtener las facturas" });
+    res.status(500).json({ error: "getInvoices Controller - Error al obtener las facturas" });
   }
 };
 
@@ -89,7 +121,7 @@ export const getInvoiceById = async (req, res) => {
 
     const invoice = await getInvoiceByIdOrNumberFromDB(invoiceId, invoiceNumber);
     if (!invoice) {
-      return res.status(404).json({ error: "Factura no encontrada" });
+      return res.status(404).json({ error: "getInvoiceById Controller - Factura no encontrada" });
     }
     res.status(200).json(invoice);
   } catch (error) {
@@ -105,7 +137,7 @@ export const updateInvoice = async (req, res) => {
     const updatedData = req.body;
     const updatedInvoice = await updateInvoiceInDB(invoiceId, updatedData);
     if (!updatedInvoice) {
-      return res.status(404).json({ error: "Factura no encontrada" });
+      return res.status(404).json({ error: "updateInvoice Controller - Factura no encontrada" });
     }
     res.status(200).json(updatedInvoice);
   } catch (error) {
@@ -120,7 +152,7 @@ export const deleteInvoice = async (req, res) => {
     const invoiceId = req.params.id;
     const deletedInvoice = await deleteInvoiceFromDB(invoiceId);
     if (!deletedInvoice) {
-      return res.status(404).json({ error: "Factura no encontrada" });
+      return res.status(404).json({ error: "deleteInvoice Controller - Factura no encontrada" });
     }
     res.status(200).json({ message: "Factura eliminada correctamente" });
   } catch (error) {

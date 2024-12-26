@@ -13,6 +13,10 @@ export const config = {
   awsAccessKeyId: process.env.AWS_ACCESS_KEY_ID,
   awsSecretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
 
+  // AWS S3
+  s3BucketName: process.env.S3_BUCKET_NAME,
+  s3BucketUrl: process.env.S3_BUCKET_URL,
+
   // JWT
   accessTokenSecret: process.env.ACCESS_TOKEN_SECRET,
   refreshTokenSecret: process.env.REFRESH_TOKEN_SECRET,
@@ -67,6 +71,12 @@ if (!config.awsAccessKeyId) {
 }
 if (!config.awsSecretAccessKey) {
   console.log("AWS Secret Access Key environment variable not set. Please add AWS_SECRET_ACCESS_KEY to .env file.");
+}
+if (!config.s3BucketName) {
+  console.log("S3 Bucket Name environment variable not set. Please add S3_BUCKET_NAME to .env file.");
+}
+if (!config.s3BucketUrl) {
+  console.log("S3 Bucket URL environment variable not set. Please add S3_BUCKET_URL to .env file.");
 }
 if (!config.accessTokenSecret) {
   console.log("Access Token Secret environment variable not set. Please add ACCESS_TOKEN_SECRET to .env file.");
