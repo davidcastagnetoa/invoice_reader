@@ -82,7 +82,7 @@ export const processInvoice = async (req, res) => {
     }
 
     console.debug("Factura guardada con éxito");
-    console.debug("Datos del nueva nueva factura guaradad:", savedInvoice.dataValues);
+    console.debug("Datos del nueva nueva factura guardada:", savedInvoice.dataValues);
     console.debug("Nueva factura guardado correctamente en la base de datos?:", savedInvoice._options.isNewRecord);
 
     // Elimina el archivo temporalmente subido
