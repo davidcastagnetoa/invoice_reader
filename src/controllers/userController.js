@@ -9,6 +9,9 @@ import {
 import { generateAccessToken, generateRefreshToken } from "../utils/token.js";
 import { getGithubUser } from "../services/githubAuthService.js";
 import CustomError from "../utils/customError.js";
+import { config } from "../config/config.js";
+
+const debugMode = config.debugMode;
 
 // * Controlador para registrar un nuevo usuario
 export const register = async (req, res) => {
@@ -35,10 +38,23 @@ export const register = async (req, res) => {
     // Crea un nuevo usuario
     const newUser = await createUser({ name, email, userPicture, password, cif, client_name, direccion, isPremium });
 
-    // Genera un token de acceso
-    const token = generateAccessToken({ id: newUser.id, email: newUser.email });
+    // Genera un token de acceso.
+    const token = generateAccessToken({
+      id: newUser.id,
+      email: newUser.email,
+    });
 
-    res.status(201).json({ token });
+    if (debugMode) {
+      console.debug("Modo debug activado, retornando ID del usuario");
+      console.debug("ID Usuario registrado: ", newUser.id);
+      res.status(201).json({
+        token,
+        id: newUser.id,
+      });
+    } else {
+      console.log("Modo debug desactivado, retornando solo el token");
+      res.status(201).json({ token });
+    }
   } catch (error) {
     console.error("Error al registrar el usuario:", error);
     if (error instanceof CustomError) {

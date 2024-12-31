@@ -16,7 +16,7 @@ export const authenticateToken = (req, res, next) => {
       return res.sendStatus(403);
     }
     req.user = user;
-    console.log("auth Token is valid");
+    console.log("Token valid!. User data: ", user);
     next();
   });
 };

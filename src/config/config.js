@@ -7,6 +7,7 @@ export const config = {
   // Server
   port: process.env.PORT,
   environment: process.env.ENVIRONMENT,
+  debugMode: process.env.DEBUG_MODE,
 
   // AWS
   awsRegion: process.env.AWS_REGION,
@@ -62,6 +63,9 @@ if (!config.port) {
 }
 if (!config.environment) {
   console.log("Environment environment variable not set. Please add ENVIRONMENT to .env file.");
+}
+if (!config.debugMode) {
+  console.log("Debug Mode environment variable not set. Please add DEBUG_MODE to .env file.");
 }
 if (!config.awsRegion) {
   console.log("AWS Region environment variable not set. Please add AWS_REGION to .env file.");

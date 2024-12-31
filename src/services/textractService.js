@@ -27,7 +27,7 @@ export const setPremiumFunction = (mode) => {
   PremiumFunction = mode;
 };
 
-export const extractWithTextract = async (bucketName, documentName) => {
+export const extractWithTextract = async (bucketName, documentName, pUserName) => {
   try {
     // Set params
     const params = {
@@ -49,7 +49,7 @@ export const extractWithTextract = async (bucketName, documentName) => {
     console.log("Datos extraídos con Textract:", response);
 
     if (PremiumFunction) {
-      const extractedText = await parseTextractResult_AI(response);
+      const extractedText = await parseTextractResult_AI(response, pUserName); //! Requiere el Nombre del usuario como argumento para futuro procesamiento en prompt
       console.log("Texto extraído con Textract y OpenAI:", extractedText);
       return extractedText;
     } else {

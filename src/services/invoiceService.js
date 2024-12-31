@@ -16,9 +16,13 @@ export const saveExtractedInvoiceData = async (invoiceData) => {
     }
 
     const formatNumber = (value) => {
-      // Elimina los caracteres no deseados (euros y espacios) y cambia las comas por puntos para conversión decimal
       const cleanedValue = value.replace(/[€\s]/g, "").replace(/,/g, ".");
-      return parseFloat(cleanedValue).toFixed(2); // Formatea el número con dos decimales
+      return parseFloat(parseFloat(cleanedValue).toFixed(2));
+    };
+
+    const formatPercentage = (value) => {
+      const cleanedValue = value.replace(/[^0-9.]/g, "").replace(/,/g, ".");
+      return parseFloat(cleanedValue);
     };
 
     // Formatea la fecha y los valores numéricos
@@ -26,7 +30,7 @@ export const saveExtractedInvoiceData = async (invoiceData) => {
       ...invoiceData,
       invoice_date: new Date(invoiceData.invoice_date),
       subtotal: formatNumber(invoiceData.subtotal),
-      vat_percentage: parseFloat(invoiceData.vat_percentage.replace(/[^0-9,]/g, "").replace(/,/g, ".")),
+      vat_percentage: formatPercentage(invoiceData.vat_percentage),
       vat_amount: formatNumber(invoiceData.vat_amount),
       total: formatNumber(invoiceData.total),
     };

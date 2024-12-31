@@ -11,7 +11,7 @@ const configuration = new Configuration({
 
 const openai = new OpenAIApi(configuration);
 
-const getDataFromOpenAI = async (pText) => {
+const getDataFromOpenAI = async (pText, pUserName) => {
   try {
     const completion = await openai.createChatCompletion({
       model: "gpt-4o-mini",
@@ -19,7 +19,7 @@ const getDataFromOpenAI = async (pText) => {
         { role: "developer", content: "You are a helpful assistant." },
         {
           role: "user",
-          content: `Extract the following information from the text and return only the JSON object with the following structure (do not include any additional text, code fences, or formatting):\n\n{\n  "invoice_number": "string",\n  "invoice_date": "string",\n  "issuer_name": "string",\n  "client_cif": "string",\n  "client_name": "string",\n  "issuer_cif": "string",\n  "subtotal": "string",\n  "vat_percentage": "string",\n  "vat_amount": "string",\n  "total": "string"\n}\nEnsure that the values for subtotal, vat_percentage, vat_amount, and total are always formatted correctly as floats separated by a comma, and for vat_percentage only include the numeric value as a float without the "%" symbol, even if the original text contains whole numbers (e.g., "subtotal: '3 €'" should be returned as "subtotal: '3,00 €'")\n\nText: ${pText}`,
+          content: `Extract the following information from the text and return only the JSON object with the following structure (do not include any additional text, code fences, or formatting):\n\n{\n  "invoice_number": "string",\n  "invoice_date": "string",\n  "issuer_name": "string",\n  "client_cif": "string",\n  "client_name": "string",\n  "issuer_cif": "string",\n  "subtotal": "string",\n  "vat_percentage": "string",\n  "vat_amount": "string",\n  "total": "string"\n}\nEnsure that the values for subtotal, vat_percentage, vat_amount, and total are always formatted correctly as floats separated by a comma, and for vat_percentage only include the numeric value as a float without the "%" symbol, even if the original text contains whole numbers (e.g., "subtotal: '3 €'" should be returned as "subtotal: '3,00 €'")\n\nIf the company name ${pUserName} is found in the text, along with indications that ${pUserName} is the recipient of the invoice, treat the data of ${pUserName} as the client's details (both client_name and client_cif). Otherwise, assign the appropriate values to the issuer fields based on the invoice's context.\n\nText: ${pText}`,
         },
       ],
       temperature: 1,
@@ -46,8 +46,9 @@ const getDataFromOpenAI = async (pText) => {
   }
 };
 
-//! Función para procesar los resultados de Textract y extraer la información relevante utilizando OpenAI.
-export const parseTextractResult_AI = async (response) => {
+// * Funciones AWS Textract
+// * PREMIUM FUNCTION - Open AI
+export const parseTextractResult_AI = async (response, pUserName) => {
   try {
     let extractedLines = [];
 
@@ -62,7 +63,7 @@ export const parseTextractResult_AI = async (response) => {
     const text = extractedLines.join("\n");
     console.log("TextractResult - Text to process: " + text);
 
-    const completion = await getDataFromOpenAI(text);
+    const completion = await getDataFromOpenAI(text, pUserName);
     console.debug("OpenAI completion result: " + JSON.stringify(completion));
 
     if (!completion) {
@@ -92,7 +93,7 @@ export const parseTextractResult_AI = async (response) => {
   }
 };
 
-// Función para procesar los resultados de Textract y extraer la información relevante.
+// ! No PREMIUM FUNCTION - No Open AI
 export const parseTextractResult = (response) => {
   let extractedLines = [];
 
@@ -121,8 +122,8 @@ export const parseTextractResult = (response) => {
   return invoiceData;
 };
 
-// Función para procesar los resultados de Tesseract y extraer la información relevante.
-export const parseTesseractResult = (text) => {
+// - Funciones Tesseact - En desarrollo
+export const parseTesseractResult = (text, pUserName) => {
   // En este caso, simplemente se divide el texto en líneas.
   const extractedLines = text.split("\n");
 
@@ -143,21 +144,12 @@ export const parseTesseractResult = (text) => {
   return invoiceData;
 };
 
-// Función para procesar los resultados de Tesseract y extraer la información relevante utilizando OpenAI.
-// ! EXPERIMENTAL
-// * PREMIUM FUNCTION
-export const parseTesseractResult_AI = async (text) => {
-  // Llama a OpenAI para analizar el texto
-  // const completion = await openai.createCompletion({
-  //   model: "text-davinci-003",
-  //   prompt: `Extract the following information from the text: invoice_number, invoice_date, issuer_name, client_cif, client_name, issuer_cif, subtotal, vat_percentage, vat_amount, total.\n\nText:\n${text}`,
-  //   max_tokens: 150,
-  // });
-
-  const completion = await completionFunction(text);
+// - Funciones Tesseact and OPEN AI - En desarrollo
+export const parseTesseractResult_AI = async (pText, pUserName) => {
+  const completion = await completionFunction(pText);
   console.log("OpenAI completion result: " + JSON.stringify(completion));
 
-  const result = JSON.parse(completion.data.choices[0].text);
+  const result = JSON.parse(completion.data.choices[0].pText);
   console.log("Result Parsed: " + JSON.stringify(result));
 
   return result;

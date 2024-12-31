@@ -10,7 +10,7 @@ export const setPremiumFunction = (mode) => {
 };
 
 // Función para extraer texto de una imagen con Tesseract.
-export const extractWithTesseract = async (filePath) => {
+export const extractWithTesseract = async (filePath, pUserName) => {
   try {
     // Verifica que el archivo exista antes de leerlo
     if (!fs.existsSync(filePath)) {
@@ -28,11 +28,12 @@ export const extractWithTesseract = async (filePath) => {
 
     // Procesa la respuesta de Tesseract
     if (PremiumFunction) {
-      const extractedText = await parseTextractResult_AI(text);
+      console.debug("Usuario con función premium", pUserName);
+      const extractedText = await parseTextractResult_AI(text, pUserName);
       console.log("Datos extraídos con Tesseract y OpenAI:", extractedText);
       return extractedText;
     } else {
-      const extractedText = parseTesseractResult(text);
+      const extractedText = parseTesseractResult(text, pUserName);
       console.log("Datos extraídos con Tesseract:", extractedText);
       return extractedText;
     }

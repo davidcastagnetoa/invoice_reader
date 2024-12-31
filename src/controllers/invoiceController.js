@@ -4,6 +4,7 @@ import { extractWithTextract } from "../services/textractService.js";
 import { extractWithTesseract } from "../services/tesseactService.js";
 import { getInvoicesFromDB, updateInvoiceInDB, deleteInvoiceFromDB } from "../services/invoiceService.js";
 import { getInvoiceByIdOrNumberFromDB, saveExtractedInvoiceData } from "../services/invoiceService.js";
+import { findUserByEmail } from "../services/userServices.js";
 import { config } from "../config/config.js";
 
 // Configura el cliente de S3
@@ -21,6 +22,16 @@ export const processInvoice = async (req, res) => {
       return res.status(400).json({ error: "No se ha cargado ningún archivo" });
     }
 
+    const userdata = await findUserByEmail(req.user.email);
+    if (!userdata) {
+      console.error("No se ha encontrado el usuario");
+      return res.status(400).json({ error: "No se ha encontrado el usuario" });
+    }
+
+    console.debug("Datos del usuario:", userdata.dataValues);
+    console.debug("Nombre del usuario:", userdata.dataValues.name);
+
+    const userName = userdata.dataValues.name;
     const filePath = req.file.path;
     const bucketName = config.s3BucketName;
     const key = `${Date.now()}_${req.file.originalname}`;
@@ -40,11 +51,11 @@ export const processInvoice = async (req, res) => {
 
     if (config.environment === "production") {
       console.log("Modo Produccion: Extrayendo datos con Amazon Textract...");
-      extractedData = await extractWithTextract(bucketName, key);
+      extractedData = await extractWithTextract(bucketName, key, userName); //! Se añade el Nombre del usuario como argumento para futuro procesamiento en prompt
       console.log("Controlador en curso. Datos extraídos con éxito:", extractedData);
     } else {
       console.log("Modo Desarrollador: Extrayendo datos con Tesseract OCR...");
-      extractedData = await extractWithTesseract(filePath);
+      extractedData = await extractWithTesseract(filePath, userName); //! Se añade el Nombre del usuario como argumento para futuro procesamiento en prompt
       console.log("Controlador en curso. Datos extraídos con éxito:", extractedData);
     }
 
@@ -92,7 +103,6 @@ export const processInvoice = async (req, res) => {
   } catch (error) {
     console.error("Error al procesar la factura:", error);
 
-    // Elimina el archivo temporalmente subido en caso de error
     if (req.file && req.file.path) {
       fs.unlinkSync(req.file.path);
     }
